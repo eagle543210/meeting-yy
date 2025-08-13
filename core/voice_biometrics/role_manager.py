@@ -1,4 +1,4 @@
-# M:\meeting\core\voice_biometrics\role_manager.py
+# core\voice_biometrics\role_manager.py
 import numpy as np
 from pymilvus import connections, Collection, utility, MilvusException # 导入 MilvusException
 from config.settings import settings
@@ -100,4 +100,5 @@ class RoleManager:
             # connections.disconnect(alias="default") # 如果确认 RoleManager 是唯一使用连接的地方，可以取消注释
             logger.info("RoleManager 完成操作，连接保持。")
         except Exception as e:
+
             logger.warning(f"RoleManager 关闭操作时发生错误: {e}", exc_info=True)
