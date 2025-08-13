@@ -1,4 +1,4 @@
-# M:\meeting\core\speech_to_text\stt_processor.py
+# core\speech_to_text\stt_processor.py
 
 import os
 import logging
@@ -105,7 +105,7 @@ class SpeechToTextProcessor(BaseSpeechToTextProcessor):
     def is_model_loaded(self) -> bool:
         """
         检查 STT 模型是否已成功加载并准备就绪。
-        此方法用于兼容外部调用，例如 app.py。
+        此方法用于兼容外部调用
         """
         return self.is_ready and self.model is not None
 
@@ -170,7 +170,7 @@ class SpeechToTextProcessor(BaseSpeechToTextProcessor):
                 temperature=temperature,
                 best_of=best_of,
                 patience=patience,
-                vad_filter=True,  # 核心：使用 faster-whisper 的内置 VAD
+                vad_filter=True,  
                 vad_parameters=dict(
                     # 这是 VAD 的灵敏度阈值，已进一步降低默认值
                     threshold=getattr(self.settings, 'VAD_SPEECH_THRESHOLD', 0.05),
@@ -191,7 +191,7 @@ class SpeechToTextProcessor(BaseSpeechToTextProcessor):
             full_text = " ".join(seg.text for seg in segments_list)
             confidence = self._calculate_confidence(segments_list)
             
-            # *** 修改：默认关闭置信度过滤 ***
+            # *** 默认关闭置信度过滤 ***
             enable_confidence_filter = getattr(self.settings, 'STT_ENABLE_CONFIDENCE_FILTER', False)
             stt_confidence_threshold = getattr(self.settings, 'STT_CONFIDENCE_THRESHOLD', 0.3)
             
@@ -267,3 +267,4 @@ class SpeechToTextProcessor(BaseSpeechToTextProcessor):
         self.is_ready = False
         self.is_loaded = False
         self.logger.info("SpeechToTextProcessor 已关闭。")
+
