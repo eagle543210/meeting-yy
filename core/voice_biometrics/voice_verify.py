@@ -1,13 +1,13 @@
-# M:\meeting\core\voice_biometrics\voice_verify.py
+# core\voice_biometrics\voice_verify.py
 
-from pymilvus import Collection, connections, MilvusException # 导入 MilvusException
+from pymilvus import Collection, connections, MilvusException 
 
 from config.settings import settings
 import numpy as np
 import logging # 导入日志模块
-from typing import List, Dict, Optional # 导入类型提示
+from typing import List, Dict, Optional 
 
-logger = logging.getLogger(__name__) # 初始化日志器
+logger = logging.getLogger(__name__) 
 
 class VoiceVerifier:
     """
@@ -121,4 +121,5 @@ class VoiceVerifier:
             # connections.disconnect(alias="default") # 如果确认 VoiceVerifier 是唯一使用连接的地方，可以取消注释
             logger.info("VoiceVerifier 完成操作，连接保持。")
         except Exception as e:
+
             logger.warning(f"VoiceVerifier 关闭操作时发生错误: {e}", exc_info=True)
