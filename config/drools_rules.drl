@@ -1,0 +1,21 @@
+package meeting.rules
+
+rule "HighPriorityMeeting"
+when
+    $data: Map( score >= 80, participants > 5 )
+then
+    modify($data) { 
+        put("weight", 1.2),
+        put("actions", ["立即跟进","升级管理层"]) 
+    }
+end
+
+rule "NormalMeeting"
+when
+    $data: Map( score >= 60 && < 80 )
+then
+    modify($data) { 
+        put("weight", 1.0),
+        put("actions", ["常规跟进"]) 
+    }
+end

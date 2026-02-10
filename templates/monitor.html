@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>会议实时监控</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        #transcripts {
+            height: 60vh;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .message-card {
+            border-left: 4px solid #0d6efd;
+            margin-bottom: 10px;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stats-card {
+            background-color: #f1f8ff;
+        }
+        .highlight {
+            background-color: #fff3cd;
+        }
+        .transcript-item {
+            background-color: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .transcript-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .transcript-content {
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2><i class="bi bi-graph-up"></i> 会议实时监控面板</h2>
+            <div>
+                <span class="badge bg-primary me-2">
+                    总连接: <span id="total-conn">0</span>
+                </span>
+                <span class="badge bg-success me-2">
+                    活跃: <span id="active-conn">0</span>
+                </span>
+                <span class="badge bg-info">
+                    处理音频: <span id="audio-count">0</span>
+                </span>
+                <span id="conn-status" class="badge bg-secondary ms-2">未连接</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between">
+                        <span><i class="bi bi-chat-text"></i> 实时转录</span>
+                        <div>
+                            <button id="pause-btn" class="btn btn-sm btn-light">
+                                <i class="bi bi-pause-fill"></i> 暂停
+                            </button>
+                            <button id="clear-btn" class="btn btn-sm btn-light ms-2">
+                                <i class="bi bi-trash"></i> 清空
+                            </button>
+                        </div>
+                    </div>
+                    <div id="transcripts" class="card-body"></div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-people"></i> 活跃声纹
+                    </div>
+                    <div id="voiceprints" class="card-body">
+                        <div id="voiceprint-list" class="d-flex flex-wrap"></div>
+                    </div>
+                </div>
+                
+                <div class="card stats-card">
+                    <div class="card-header bg-info text-white">
+                        <i class="bi bi-speedometer2"></i> 系统状态
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6>实时数据流</h6>
+                            <div class="progress mb-2">
+                                <div id="data-stream-bar" class="progress-bar progress-bar-striped" 
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted" id="data-stream-text">0 消息/分钟</small>
+                        </div>
+                        <div class="mb-3">
+                            <h6>最后活动</h6>
+                            <div id="last-activity">
+                                <i class="bi bi-clock-history"></i> <span id="last-update">从未</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h6>客户端分布</h6>
+                            <div id="client-ips" class="small"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+        class MeetingMonitor {
+            constructor() {
+                this.socket = null;
+                this.voiceprints = new Map();
+                this.messageCount = 0;
+                this.isPaused = false;
+                this.messageQueue = [];
+                this.retryCount = 0;
+                this.maxRetries = 5;
+                this.receivedMessages = new Set();
+                this.lastTranscriptTime = 0;
+                this.lastActivityTime = 0;
+                this.clientIPs = new Set();
+                this.isProcessing = false;
+                
+                this.initElements();
+                this.initEventListeners();
+                this.connectWebSocket();
+                this.startStatsTimer();
+            }
+            
+            initElements() {
+                this.transcriptsEl = document.getElementById('transcripts');
+                this.voiceprintListEl = document.getElementById('voiceprint-list');
+                this.lastUpdateEl = document.getElementById('last-update');
+                this.totalConnEl = document.getElementById('total-conn');
+                this.activeConnEl = document.getElementById('active-conn');
+                this.audioCountEl = document.getElementById('audio-count');
+                this.dataStreamBar = document.getElementById('data-stream-bar');
+                this.dataStreamText = document.getElementById('data-stream-text');
+                this.clientIpsEl = document.getElementById('client-ips');
+                this.pauseBtn = document.getElementById('pause-btn');
+                this.clearBtn = document.getElementById('clear-btn');
+                this.connStatusEl = document.getElementById('conn-status');
+            }
+            
+            initEventListeners() {
+                this.pauseBtn.addEventListener('click', () => this.togglePause());
+                this.clearBtn.addEventListener('click', () => this.clearTranscripts());
+            }
+            
+            connectWebSocket() {
+                // 确保使用正确的协议和端口
+                const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                const host = window.location.host;
+                
+                // 清除现有连接
+                if (this.socket) {
+                    this.socket.onopen = null;
+                    this.socket.onclose = null;
+                    this.socket.onerror = null;
+                    this.socket.onmessage = null;
+                    if (this.socket.readyState === WebSocket.OPEN) {
+                        this.socket.close();
+                    }
+                }
+                
+                this.socket = new WebSocket(`${protocol}${host}/monitor-ws`);
+                
+                this.socket.onopen = (e) => {
+                    console.log('监控WebSocket连接成功');
+                    this.retryCount = 0;
+                    this.updateStatus('connected');
+                    this.lastActivityTime = Date.now();
+                    this.updateLastActivity();
+                };
+                
+                this.socket.onmessage = (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        this.handleMessage(data);
+                        this.messageCount++;
+                        this.lastActivityTime = Date.now();
+                        this.updateLastActivity();
+                    } catch (error) {
+                        console.error('消息解析错误:', error);
+                    }
+                };
+                
+                this.socket.onerror = (e) => {
+                    console.error('监控WebSocket错误:', e);
+                    this.updateStatus('error');
+                };
+                
+                this.socket.onclose = (e) => {
+                    console.log('监控WebSocket连接关闭', e);
+                    this.updateStatus('disconnected');
+                    
+                    if (this.retryCount < this.maxRetries) {
+                        this.retryCount++;
+                        const delay = Math.min(30000, 1000 * Math.pow(2, this.retryCount));
+                        console.log(`将在 ${delay}ms 后尝试重连...`);
+                        setTimeout(() => this.connectWebSocket(), delay);
+                    }
+                };
+            }
+            
+            updateStatus(status) {
+                if (!this.connStatusEl) return;
+                
+                const statusMap = {
+                    'connected': { class: 'bg-success', text: '已连接' },
+                    'disconnected': { class: 'bg-danger', text: '已断开' },
+                    'error': { class: 'bg-warning', text: '错误' }
+                };
+                
+                const statusInfo = statusMap[status] || { class: 'bg-secondary', text: '未知' };
+                this.connStatusEl.className = `badge ${statusInfo.class}`;
+                this.connStatusEl.textContent = statusInfo.text;
+            }
+            
+            handleMessage(data) {
+                switch(data.type) {
+                    case 'init':
+                        this.handleInitData(data);
+                        break;
+                    case 'transcript':
+                        this.handleTranscript(data);
+                        break;
+                    case 'stats_update':
+                        this.updateStats(data.stats);
+                        break;
+                    case 'voiceprint_update':
+                        this.updateVoiceprints(data.voiceprints);
+                        break;
+                    case 'client_update':
+                        this.updateClientIPs(data.client_ips);
+                        break;
+                }
+            }
+            
+            handleInitData(data) {
+                if (data.stats) {
+                    this.updateStats(data.stats);
+                }
+                
+                if (data.voiceprints) {
+                    this.updateVoiceprints(data.voiceprints);
+                }
+                
+                if (data.client_ips) {
+                    this.updateClientIPs(data.client_ips);
+                }
+            }
+            
+            handleTranscript(data) {
+                if (!data.text) return;
+                
+                // 检查是否已处理过该消息
+                const messageId = data.timestamp + data.voiceprint_id;
+                if (this.receivedMessages.has(messageId)) {
+                    return;
+                }
+                this.receivedMessages.add(messageId);
+                
+                // 限制存储的消息ID数量
+                if (this.receivedMessages.size > 100) {
+                    const oldestId = this.receivedMessages.values().next().value;
+                    this.receivedMessages.delete(oldestId);
+                }
+                
+                if (this.isPaused) {
+                    this.messageQueue.push(data);
+                    return;
+                }
+                
+                this.displayTranscript(data);
+            }
+            
+            displayTranscript(data) {
+                const time = new Date(data.timestamp).toLocaleTimeString();
+                
+                const transcriptEl = document.createElement('div');
+                transcriptEl.className = 'transcript-item';
+                transcriptEl.innerHTML = `
+                    <div class="transcript-header">
+                        <span class="badge bg-primary">${data.voiceprint_id || '未知'}</span>
+                        <span class="text-muted">${time}</span>
+                    </div>
+                    <div class="transcript-content">${data.text}</div>
+                    ${data.client_ip ? `<div class="text-end small mt-1"><i class="bi bi-pc"></i> ${data.client_ip}</div>` : ''}
+                `;
+                
+                this.transcriptsEl.prepend(transcriptEl);
+                
+                // 限制最多保留100条消息
+                if (this.transcriptsEl.children.length > 100) {
+                    this.transcriptsEl.removeChild(this.transcriptsEl.lastChild);
+                }
+            }
+            
+            updateStats(stats) {
+                if (!stats) return;
+                
+                console.log("更新统计:", stats);
+                this.totalConnEl.textContent = stats.total_connections || 0;
+                this.activeConnEl.textContent = stats.active_connections || 0;
+                this.audioCountEl.textContent = stats.audio_chunks_processed || 0;
+            }
+            
+            updateVoiceprints(voiceprints) {
+                if (!voiceprints || !Array.isArray(voiceprints)) return;
+                
+                this.voiceprintListEl.innerHTML = '';
+                voiceprints.forEach(vpId => {
+                    if (!this.voiceprints.has(vpId)) {
+                        this.voiceprints.set(vpId, true);
+                        
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-secondary me-2 mb-2';
+                        badge.textContent = vpId;
+                        badge.style.cursor = 'pointer';
+                        
+                        badge.addEventListener('click', () => {
+                            this.filterByVoiceprint(vpId);
+                        });
+                        
+                        this.voiceprintListEl.appendChild(badge);
+                    }
+                });
+            }
+            
+            updateClientIPs(ips) {
+                if (!ips || !Array.isArray(ips)) return;
+                
+                this.clientIPs = new Set(ips);
+                this.clientIpsEl.innerHTML = '';
+                
+                this.clientIPs.forEach(ip => {
+                    const ipEl = document.createElement('div');
+                    ipEl.textContent = ip;
+                    this.clientIpsEl.appendChild(ipEl);
+                });
+            }
+            
+            updateLastActivity() {
+                const now = new Date(this.lastActivityTime);
+                this.lastUpdateEl.textContent = now.toLocaleTimeString();
+            }
+            
+            filterByVoiceprint(vpId) {
+                Array.from(this.transcriptsEl.children).forEach(el => {
+                    const badge = el.querySelector('.badge');
+                    el.style.display = badge && badge.textContent === vpId ? 'block' : 'none';
+                });
+            }
+            
+            togglePause() {
+                this.isPaused = !this.isPaused;
+                this.pauseBtn.innerHTML = this.isPaused ? 
+                    '<i class="bi bi-play-fill"></i> 继续' : 
+                    '<i class="bi bi-pause-fill"></i> 暂停';
+                
+                if (!this.isPaused && this.messageQueue.length > 0) {
+                    this.messageQueue.forEach(msg => this.displayTranscript(msg));
+                    this.messageQueue = [];
+                }
+            }
+            
+            clearTranscripts() {
+                this.transcriptsEl.innerHTML = '';
+            }
+            
+            startStatsTimer() {
+                setInterval(() => {
+                    const messagesPerMin = Math.round(this.messageCount * 12); // 5秒间隔换算为每分钟
+                    this.dataStreamBar.style.width = `${Math.min(100, messagesPerMin)}%`;
+                    
+                    if (messagesPerMin < 20) {
+                        this.dataStreamBar.className = 'progress-bar progress-bar-striped bg-success';
+                    } else if (messagesPerMin < 50) {
+                        this.dataStreamBar.className = 'progress-bar progress-bar-striped bg-warning';
+                    } else {
+                        this.dataStreamBar.className = 'progress-bar progress-bar-striped bg-danger';
+                    }
+                    
+                    this.dataStreamText.textContent = `${messagesPerMin} 消息/分钟`;
+                    this.messageCount = 0;
+                    
+                    // 更新最后活动时间
+                    this.updateLastActivity();
+                }, 5000); // 每5秒更新一次
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            window.monitor = new MeetingMonitor();
+        });
+    </script>
+</body>
+</html>

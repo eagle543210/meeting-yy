@@ -1,0 +1,342 @@
+body {
+    background-color: #f5f5f5;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.meeting-container {
+    padding: 20px;
+    height: 100vh;
+}
+
+.meeting-card, .participants-card, .summary-card {
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.speaker-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    font-size: 0.9rem;
+}
+.confidence-badge {
+    font-size: 0.7em;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: 6px;
+}
+
+
+
+
+.speech-bubble {
+    background-color: white;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--speaker-color, #0d6efd);
+    animation: fadeIn 0.3s ease;
+}
+
+.speaker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.speaker-name {
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.speaker-time {
+    color: #6c757d;
+}
+
+.speech-content {
+    line-height: 1.5;
+}
+
+#record-btn {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.participants-card .list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.participant-name {
+    color: #0d6efd;
+}
+
+/* 不同发言人的气泡颜色 */
+.speech-bubble[data-speaker="user1"] {
+    border-left-color: #0d6efd;
+}
+.speech-bubble[data-speaker="user2"] {
+    border-left-color: #198754;
+}
+.speech-bubble[data-speaker="user3"] {
+    border-left-color: #dc3545;
+}
+.speech-bubble[data-speaker="user4"] {
+    border-left-color: #ffc107;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+/* 权限警告样式 */
+#permission-warning {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 300px;
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+#volume-meter {
+    transition: width 0.1s ease-out;
+}
+
+.volume-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.volume-value {
+    font-weight: bold;
+}
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6c757d;
+    text-align: center;
+    padding: 2rem;
+}
+
+.speech-entry.draft-transcript {
+    color: #888; /* 灰色文本 */
+    font-style: italic; /* 斜体 */
+    opacity: 0.7; /* 稍微透明 */
+    /* 可以添加其他样式，比如一个虚线下划线等 */
+}
+
+
+
+/* 录音中隐藏空状态 */
+.recording .empty-state {
+    display: none !important;
+}
+.meeting-container {
+            padding: 20px;
+            height: 100vh;
+        }
+        .transcript-panel {
+            height: 60vh;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .speech-bubble {
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .speaker-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        .speaker-name {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .speaker-time {
+            color: #6c757d;
+        }
+        .speech-content {
+            line-height: 1.5;
+        }
+        .participants-card {
+            height: 100%;
+        }
+        #record-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        .connection-status {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        /* 添加以下CSS到您的样式表中 */
+.participants-card {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.participants-card .list-group-item {
+    border-left: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.participants-card .list-group-item:hover {
+    background-color: #f8f9fa;
+    border-left-color: #0d6efd;
+}
+
+
+
+.speech-bubble:hover {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.speaker-name .badge {
+    font-size: 0.6em;
+    vertical-align: middle;
+}
+
+#volume-meter {
+    transition: width 0.1s ease, background-color 0.3s ease;
+}
+
+#transcript-container {
+    scroll-behavior: smooth;
+}
+/* static/css/meeting_ui.css */
+
+/* 会议纪要容器样式 */
+.transcript-panel {
+    max-height: 600px; /* 限制高度并启用滚动 */
+    overflow-y: auto;
+    background-color: #f8f9fa; /* 轻微的背景色 */
+    padding: 15px;
+    border-radius: 5px;
+}
+
+/* 语音条目基础样式 - 对应 .speech-bubble */
+.speech-bubble {
+    background-color: #e2f0fb; /* 浅蓝色背景 */
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 10px; /* 条目间距 */
+    word-wrap: break-word; /* 确保长文本换行 */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* 轻微阴影 */
+}
+
+.speech-bubble .speaker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.speech-bubble .speaker-name {
+    font-weight: bold;
+    color: #007bff; /* 蓝色名称 */
+}
+
+.speech-bubble .speaker-time {
+    font-size: 0.8em;
+    color: #6c757d; /* 灰色时间 */
+}
+
+.speech-bubble .speech-content {
+    font-size: 1.0em;
+    line-height: 1.5;
+    color: #343a40; /* 深灰色内容 */
+}
+
+
+/* 实时草稿状态（正在更新的条目） */
+.speech-bubble.draft-transcript {
+    background-color: #f0f8ff; /* 更浅的蓝色背景，表示正在进行中 */
+    color: #6c757d; /* 稍暗的文本颜色，表示是“草稿” */
+    font-style: italic; /* 斜体 */
+    opacity: 0.9;
+    /* 移除底边框，让它看起来是连续的 */
+    border-bottom: none !important; 
+    margin-bottom: 0; /* 连续条目间距更小 */
+    border-radius: 10px 10px 0 0; /* 圆角顶部，直角底部，暗示可以连接 */
+}
+
+/* 最终提交状态（已完成的条目） */
+.speech-bubble.final-transcript {
+    background-color: #e2f0fb; /* 恢复正常背景色 */
+    color: #212529; /* 恢复正常文本颜色 */
+    font-style: normal; /* 恢复正常字体 */
+    opacity: 1;
+    /* 添加一个清晰的下边框，表示一段话结束 */
+    border-bottom: 1px solid #cce5ff; 
+    margin-bottom: 10px; /* 恢复正常间距 */
+    border-radius: 0 0 10px 10px; /* 直角顶部，圆角底部，暗示是某段落的结尾 */
+    /* 如果上一个也是final-transcript，则顶部也圆角 */
+}
+/* 针对连续的 final-transcript，让中间的段落上下都平直 */
+.speech-bubble.final-transcript + .speech-bubble.final-transcript {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.speech-bubble.final-transcript:not(.draft-transcript) + .speech-bubble.draft-transcript {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+/* 解决空状态提示 */
+.transcript-panel .empty-state {
+    text-align: center;
+    color: #6c757d;
+    padding: 50px 0;
+}

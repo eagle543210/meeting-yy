@@ -1,0 +1,37 @@
+/* M:\meeting\client-app\src\index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 您之前在 <style> 标签中的自定义滚动条样式可以移到这里 */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #2d3748; /* Gray-800 */
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #4a5568; /* Gray-600 */
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* Gray-500 */
+}
+/* 动画效果 */
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in-up {
+    animation: fadeInScale 0.3s ease-out forwards;
+}
+/* 确保 body 字体使用 Inter */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    /* 临时添加一个非常显眼的背景色，用于测试样式是否加载 */
+    background-color: #6f00ff !important; /* 鲜红色，如果看到这个颜色说明CSS加载了 */
+}

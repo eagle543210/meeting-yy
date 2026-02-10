@@ -1,0 +1,351 @@
+/* static/css/meeting_ui.css */
+
+body {
+    font-family: 'Inter', sans-serif; /* 使用Inter字体，如果不可用则回退到无衬线字体 */
+    background-color: #f0f2f5; /* 浅灰色背景 */
+    color: #333;
+    height: 100vh; /* 确保body高度占满视口 */
+    margin: 0;
+    display: flex; /* 使用flex布局让内容居中 */
+    justify-content: center;
+    align-items: center;
+}
+
+.meeting-container {
+    max-width: 1200px; /* 限制最大宽度 */
+    width: 100%;
+    height: 95vh; /* 容器高度略小于视口，留出一点边距 */
+    background-color: #fff;
+    border-radius: 15px; /* 圆角边框 */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* 柔和的阴影 */
+    overflow: hidden; /* 隐藏溢出内容 */
+    padding: 20px;
+}
+
+.row.h-100 {
+    height: 100%; /* 确保行高占满父容器 */
+}
+
+.col-md-8, .col-md-4 {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 列高占满父容器 */
+}
+
+/* 会议主面板 */
+.meeting-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.meeting-card .card-header {
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white;
+    padding: 15px 20px;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px 12px 0 0; /* 顶部圆角 */
+}
+
+.meeting-card .card-header h5 {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.speaker-info {
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.transcript-panel {
+    flex-grow: 1;
+    overflow-y: auto; /* 允许滚动 */
+    padding: 20px;
+    background-color: #fdfdfd;
+    position: relative; /* 用于空状态定位 */
+}
+
+.empty-state {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #aaa;
+}
+
+.empty-state i {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+/* 语音气泡样式 */
+.speech-entry {
+    background-color: #e9ecef;
+    border-radius: 15px;
+    padding: 12px 18px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.speech-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.speaker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.speaker-name {
+    font-weight: bold;
+    color: #0056b3; /* 深蓝色 */
+}
+
+.speaker-time {
+    font-size: 0.8em;
+    color: #999;
+}
+
+.speech-content {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* 说话人颜色（简单哈希） */
+.speaker-color-0 .speaker-name { color: #28a745; } /* green */
+.speaker-color-1 .speaker-name { color: #dc3545; } /* red */
+.speaker-color-2 .speaker-name { color: #ffc107; } /* yellow */
+.speaker-color-3 .speaker-name { color: #17a2b8; } /* info blue */
+.speaker-color-4 .speaker-name { color: #6f42c1; } /* purple */
+
+
+/* 底部控制区 */
+.meeting-card .card-footer {
+    background-color: #f8f9fa;
+    padding: 15px 20px;
+    border-top: none;
+    border-radius: 0 0 12px 12px; /* 底部圆角 */
+}
+
+#record-btn {
+    width: 70px;
+    height: 70px;
+    font-size: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+#record-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+#record-btn.btn-danger {
+    background-color: #dc3545;
+}
+#record-btn.btn-danger:hover {
+    background-color: #c82333;
+}
+#record-btn.btn-success {
+    background-color: #28a745;
+}
+#record-btn.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-lg i {
+    font-size: 1.2em;
+}
+
+.permission-warning {
+    margin-left: 15px;
+    font-size: 0.9em;
+}
+
+/* 侧边栏卡片 */
+.participants-card, .admin-panel, .mic-status-card, .export-panel, .summary-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px; /* 保持卡片间距 */
+    overflow: hidden;
+}
+
+.participants-card .card-header,
+.admin-panel .card-header,
+.mic-status-card .card-header,
+.export-panel .card-header,
+.summary-card .card-header {
+    padding: 12px 18px;
+    border-bottom: none;
+    font-weight: 600;
+    border-radius: 12px 12px 0 0;
+}
+
+.participants-card .card-header { background-color: #28a745; } /* green */
+.admin-panel .card-header { background-color: #ffc107; color: #333; } /* warning yellow */
+.mic-status-card .card-header { background-color: #17a2b8; } /* info blue */
+.export-panel .card-header { background-color: #6c757d; } /* secondary gray */
+.summary-card .card-header { background-color: #007bff; } /* primary blue */
+
+
+.card-body {
+    padding: 15px;
+}
+
+.list-group-item-action {
+    padding: 10px 15px;
+    border-left: none;
+    border-right: none;
+    transition: background-color 0.2s ease;
+}
+.list-group-item-action:hover {
+    background-color: #e9ecef;
+}
+
+.participant-name {
+    font-weight: 600;
+    color: #333;
+}
+.participant-role {
+    font-size: 0.85em;
+    color: #666;
+}
+.speech-count {
+    font-size: 0.8em;
+    color: #999;
+}
+
+/* 权限管理面板 */
+.admin-panel select.form-select {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+}
+
+.admin-panel .btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* 麦克风状态 */
+.progress {
+    height: 25px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.volume-indicator {
+    transition: width 0.1s ease-out; /* 平滑过渡 */
+    background-color: #007bff; /* 默认蓝色 */
+}
+
+.volume-indicator.bg-success { background-color: #28a745; }
+.volume-indicator.bg-warning { background-color: #ffc107; }
+.volume-indicator.bg-danger { background-color: #dc3545; }
+
+.volume-text {
+    display: block;
+    margin-top: 5px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* 导出面板 */
+.export-panel .btn {
+    text-align: left;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.export-panel .btn i {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+.export-panel .btn:hover {
+    transform: translateX(5px);
+}
+
+/* 实时摘要 */
+.summary-card .card-body {
+    background-color: #fdfdfd;
+    min-height: 100px; /* 最小高度 */
+    max-height: 300px; /* 最大高度 */
+    overflow-y: auto;
+}
+
+.summary-card .card-body p {
+    margin-bottom: 0.5em;
+    line-height: 1.5;
+}
+
+/* 连接状态 */
+.connection-status {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-top: auto; /* 推到底部 */
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
+/* Toast 消息样式 */
+.toast-container {
+    z-index: 1080; /* 确保在最上层 */
+}
+.toast {
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+.toast-body {
+    font-size: 0.95em;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .meeting-container {
+        height: auto;
+        min-height: 95vh;
+        padding: 10px;
+    }
+    .col-md-8, .col-md-4 {
+        height: auto;
+        margin-bottom: 20px;
+    }
+    .meeting-card {
+        margin-bottom: 20px;
+    }
+    .meeting-card .card-header, .meeting-card .card-footer {
+        padding: 10px 15px;
+    }
+    #record-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.8em;
+    }
+    .admin-panel, .export-panel, .mic-status-card, .summary-card {
+        margin-bottom: 15px;
+    }
+}
+
